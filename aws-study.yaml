@@ -1,0 +1,215 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This is an assignment using CloudFormation at RaiseTech.
+
+Parameters:
+  KeyName:
+    Description: "Name of an existing EC2 KeyPair to SSH into the instance"
+    Type: AWS::EC2::KeyPair::KeyName
+
+  ResourcePrefix:
+    Description: "Resource Prefix"
+    Type: String
+    Default: "aws-study"
+
+  SecurityGroupPrefix:
+    Description: "Up to 255 characters in length. Can't start with sg-."
+    Type: String
+    AllowedPattern: '^(?!sg-)[a-zA-Z0-9 ._\-:/()#,@\[\]\+=&;{}!$*]{1,255}$'
+    Default: "aws-study"
+
+  MyIP:
+    Description: "The IP address range that is allowed to access the instance"
+    Type: String
+    AllowedPattern: '^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+
+Resources:
+  # VPC
+  RaiseTechVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-vpc"
+          Key: Name
+
+  # IGW
+  RaiseTechIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ResourcePrefix}-igw"
+  
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      InternetGatewayId: !Ref RaiseTechIGW
+
+  # S3Bucket
+  RaiseTechS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ResourcePrefix}-vpce-s3"
+
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      RouteTableIds:
+        - !Ref PrivateSubnetRtb1
+        - !Ref PrivateSubnetRtb2
+      VpcId: !Ref RaiseTechVPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcEndpointType: Gateway
+
+  # Routetable
+  PublicSubnetRtb:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-rtb-public"
+          Key: Name
+
+  AssoPublicSubnet1aRtb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRtb
+      SubnetId: !Ref PublicSubnet1a
+
+  AssoPublicSubnet1cRtb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRtb
+      SubnetId: !Ref PublicSubnet1c
+    
+  PrivateSubnetRtb1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-rtb-private1"
+          Key: Name
+
+  AssoPrivateSubnet1aRtb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateSubnetRtb1
+      SubnetId: !Ref PrivateSubnet1a
+
+  PrivateSubnetRtb2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-rtb-private2"
+          Key: Name
+
+  AssoPrivateSubnet1cRtb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateSubnetRtb2
+      SubnetId: !Ref PrivateSubnet1c
+
+  # route
+  routePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref PublicSubnetRtb
+      GatewayId: !Ref RaiseTechIGW
+
+  # Subnet
+  PublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      MapPublicIpOnLaunch: true
+      CidrBlock: 10.0.0.0/20
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-subnet-public-a"
+          Key: Name
+
+  PrivateSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      MapPublicIpOnLaunch: false
+      CidrBlock: 10.0.128.0/20
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-subnet-private-a"
+          Key: Name
+
+  PublicSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      MapPublicIpOnLaunch: true
+      CidrBlock: 10.0.16.0/20
+      AvailabilityZone: !Select 
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-subnet-public-c"
+          Key: Name
+
+  PrivateSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref RaiseTechVPC
+      MapPublicIpOnLaunch: false
+      CidrBlock: 10.0.144.0/20
+      AvailabilityZone: !Select 
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
+      Tags:
+        - Value: !Sub "${ResourcePrefix}-subnet-private-c"
+          Key: Name
+
+  # EC2
+  RaiseTechEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-06cce67a5893f85f9"
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PublicSubnet1a
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${ResourcePrefix}-ec2"
+      DisableApiTermination: true
+
+  #SecurityGroup
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Created by CloudFormation"
+      VpcId: !Ref RaiseTechVPC
+      GroupName: !Sub "${SecurityGroupPrefix}-ec2-sg"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub "${MyIP}/32"
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
