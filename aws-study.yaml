@@ -11,6 +11,35 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
 
+  RDSInstanceClass:
+    Description: The compute and memory capacity of the DB instance
+    Type: String
+    Default: db.t4g.micro
+
+  RDSMasterUserName:
+    Description: "1 to 16 alphanumeric characters. The first character must be a letter."
+    Type: String
+    AllowedPattern: ^[A-Za-z][A-Za-z0-9]{0,15}$
+    Default: root
+
+  RDSMasterUserPassword:
+    Description: "Please enter at least 8 characters using displayable ASCII characters. The following symbols cannot be included: / ' \" @"
+    Type: String
+    NoEcho: true
+    AllowedPattern: ^[\x20-\x7E&&[^\/'"@]]{8,41}$
+
+  RDSDBName:
+    Description: "Must contain 1 to 64 characters consisting of letters or numbers."
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9][a-zA-Z0-9_]{0,63}$
+    Default: awsstudy
+
+  RDSSubnetGroupName:
+    Description: "Must contain no more than 255 letters, numbers, periods, underscores, spaces, or hyphens. Must not be default. First character must be a letter."
+    Type: String
+    AllowedPattern: ^[a-zA-Z][A-Za-z0-9 ._-]{0,254}$
+    Default: rds-ec2-db-subnet-group
+
   ResourcePrefix:
     Description: "Resource Prefix"
     Type: String
@@ -21,6 +50,12 @@ Parameters:
     Type: String
     AllowedPattern: '^(?!sg-)[a-zA-Z0-9 ._\-:/()#,@\[\]\+=&;{}!$*]{1,255}$'
     Default: "aws-study"
+
+  LoadBalancerPrefix:
+    Description: "This name must be unique per region per account, can have a maximum of 25 characters. must contain only alphanumeric characters or hyphens, must not begin with a hyphen, and must not begin with \"internal-\"."
+    Type: String
+    AllowedPattern: ^(?!internal-)[A-Za-z0-9][A-Za-z0-9-]{0,24}$
+    Default: aws-study
 
   MyIP:
     Description: "The IP address range that is allowed to access the instance"
@@ -195,6 +230,53 @@ Resources:
           Value: !Sub "${ResourcePrefix}-ec2"
       DisableApiTermination: true
 
+  # RDS
+  RaiseTechRDS:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: mysql
+      EngineVersion: 8.4.7
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      MasterUsername: !Ref RDSMasterUserName
+      MasterUserPassword: !Ref RDSMasterUserPassword
+      DBInstanceClass: !Ref RDSInstanceClass
+      DBInstanceIdentifier: !Sub "${ResourcePrefix}-rds"
+      StorageType: gp2
+      AllocatedStorage: 20
+      MaxAllocatedStorage: 1000
+      Port: 3306
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      PubliclyAccessible: false
+      MultiAZ: false
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
+      MonitoringRoleArn: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/rds-monitoring-role
+      MonitoringInterval: 60
+      EnableCloudwatchLogsExports:
+        - audit
+        - error
+        - general
+        - slowquery
+      DBName: !Ref RDSDBName
+      StorageEncrypted: true
+      DeletionProtection: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ResourcePrefix}-rds"
+
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: "Created by CloudFormation"
+      DBSubnetGroupName: !Ref RDSSubnetGroupName
+      SubnetIds:
+        - !Ref PrivateSubnet1a
+        - !Ref PrivateSubnet1c
+
   #SecurityGroup
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -208,13 +290,74 @@ Resources:
           ToPort: 22
           CidrIp: !Sub "${MyIP}/32"
         - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Created by CloudFormation"
+      VpcId: !Ref RaiseTechVPC
+      GroupName: !Sub "${SecurityGroupPrefix}-rds-sg"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Created by CloudFormation"
+      VpcId: !Ref RaiseTechVPC
+      GroupName: !Sub "${SecurityGroupPrefix}-alb-sg"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
           CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
+      
+  # ALB
+  RaiseTechALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${LoadBalancerPrefix}ALB"
+      Subnets:
+        - !Ref PublicSubnet1a
+        - !Ref PublicSubnet1c
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref RaiseTechALB
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup
+      Port: 80
+      Protocol: HTTP
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${LoadBalancerPrefix}-alb-tg"
+      VpcId: !Ref RaiseTechVPC
+      TargetType: instance
+      Port: 8080
+      Protocol: HTTP
+      IpAddressType: ipv4
+      Targets:
+        - Id: !Ref RaiseTechEC2
+      Matcher:
+        HttpCode: 200,300,301
