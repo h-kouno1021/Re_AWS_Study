@@ -51,11 +51,11 @@ Parameters:
     AllowedPattern: '^(?!sg-)[a-zA-Z0-9 ._\-:/()#,@\[\]\+=&;{}!$*]{1,255}$'
     Default: "aws-study"
 
-  LoadBalancerPrefix:
-    Description: "This name must be unique per region per account, can have a maximum of 25 characters. must contain only alphanumeric characters or hyphens, must not begin with a hyphen, and must not begin with \"internal-\"."
+  LoadBalancerName:
+    Description: "This name must be unique per region per account, can have a maximum of 29 characters, must contain only alphanumeric characters or hyphens, must not begin or end with a hyphen,  and must not begin with \"internal-\"."
     Type: String
-    AllowedPattern: ^(?!internal-)[A-Za-z0-9][A-Za-z0-9-]{0,24}$
-    Default: aws-study
+    AllowedPattern: ^(?!internal-)[A-Za-z0-9](?:[A-Za-z0-9-]{0,27}[a-zA-Z0-9])?$
+    Default: aws-study-alb
 
   MyIP:
     Description: "The IP address range that is allowed to access the instance"
@@ -331,7 +331,8 @@ Resources:
   RaiseTechALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub "${LoadBalancerPrefix}ALB"
+      Scheme: internet-facing
+      Name: !Ref LoadBalancerName
       Subnets:
         - !Ref PublicSubnet1a
         - !Ref PublicSubnet1c
@@ -351,7 +352,7 @@ Resources:
   ALBTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${LoadBalancerPrefix}-alb-tg"
+      Name: !Sub "${LoadBalancerName}-tg"
       VpcId: !Ref RaiseTechVPC
       TargetType: instance
       Port: 8080
