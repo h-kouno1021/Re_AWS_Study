@@ -6,12 +6,6 @@ Parameters:
     Description: "Name of an existing EC2 KeyPair to SSH into the instance"
     Type: AWS::EC2::KeyPair::KeyName
 
-  MonitoringRoleNameRDS:
-    Description: "This parameter allows a string of characters consisting of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: _+=,.@-." 
-    Type: String
-    AllowedPattern: ^[a-zA-Z0-9_+=,.@-]{1,64}$
-    Default: RDSMonitoringRole
-
   EC2ImageId:
     Description: Name of a Parameter Store parameter that stores the ID of the Amazon Machine Image (AMI).
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
@@ -69,25 +63,6 @@ Parameters:
     AllowedPattern: '^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
 
 Resources:
-  # IAMRole
-  MonitoringRoleRDS:
-    Type: AWS::IAM::Role
-    Properties:
-      # RDSがAmazon CloudWatch Logsに拡張モニタリングメトリクスを送信することを許可するためのロール
-      RoleName: !Ref MonitoringRoleNameRDS
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - monitoring.rds.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
-      Path: /
-
   # VPC
   RaiseTechVPC:
     Type: AWS::EC2::VPC
@@ -279,7 +254,7 @@ Resources:
       AvailabilityZone: !Select 
         - 0
         - Fn::GetAZs: !Ref AWS::Region
-      MonitoringRoleArn: !GetAtt MonitoringRoleRDS.Arn
+      MonitoringRoleArn: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/rds-monitoring-role
       MonitoringInterval: 60
       EnableCloudwatchLogsExports:
         - audit
