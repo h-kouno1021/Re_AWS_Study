@@ -3,17 +3,17 @@ output "vpc_id" {
 }
 
 output "public_subnet_ids" {
-  value = [
+  value = {
     for az, subnet in local.subnets :
-    aws_subnet.subnets[az].id
+    az => aws_subnet.subnets[az].id
     if subnet.type == "public"
-  ]
+  }
 }
 
 output "private_subnet_ids" {
-  value = [
+  value = {
     for az, subnet in local.subnets :
-    aws_subnet.subnets[az].id
+    az => aws_subnet.subnets[az].id
     if subnet.type == "private"
-  ]
+  }
 }
