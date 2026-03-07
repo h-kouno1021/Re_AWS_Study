@@ -21,3 +21,25 @@ variable "ec2_instance_config" {
 variable "my_ip" {
   type = string
 }
+
+# RDS
+variable "rds_instance_config" {
+  type    = string
+  default = "db.t4g.micro"
+}
+variable "rds_multi_az" {
+  type    = bool
+  default = true
+}
+variable "rds_db_name" {
+  type    = string
+  default = "awsstudy"
+}
+variable "rds_db_username" {
+  type      = string
+  sensitive = true
+}
+variable "rds_db_password" {
+  type      = string
+  sensitive = true
+}
