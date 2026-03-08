@@ -1,3 +1,8 @@
+locals {
+  # リソース名の接頭辞
+  name_prefix = "${var.pj_prefix}-terraform-${var.my_env}"
+}
+
 variable "my_env" {
   type        = string
   description = "Deployment environment"
