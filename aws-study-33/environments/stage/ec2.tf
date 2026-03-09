@@ -41,3 +41,42 @@ resource "aws_security_group" "ec2_sg" {
     Name = "${var.pj_prefix}-terraform-${var.my_env}-ec2-sg"
   }
 }
+
+# CPU使用率に対するアラーム設定
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization_ec2" {
+  alarm_description = "${aws_instance.ec2.id}のCPU使用率が1%以上になりました。"
+  alarm_name        = "${local.name_prefix}-EC2-CPUUtilization-Alarm"
+
+  namespace = "AWS/EC2"
+  dimensions = {
+    "InstanceId" = aws_instance.ec2.id
+  }
+  metric_name = "CPUUtilization"
+  unit        = "Percent"
+
+  # 60秒間の平均値からデータポイントを算出します
+  statistic = "Average"
+  period    = 60
+  # 直近5つのデータポイントのうち1つがしきい値以上になった時にアラームを発行します
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold           = 1
+  evaluation_periods  = 5
+  datapoints_to_alarm = 1
+
+  treat_missing_data = "missing"
+
+  # 指定のEメールアドレス宛にアラームの通知を送信します
+  actions_enabled = true
+  alarm_actions   = [aws_sns_topic.email.arn]
+}
+
+resource "aws_sns_topic" "email" {
+  name = "${local.name_prefix}-topic"
+}
+
+resource "aws_sns_topic_subscription" "email" {
+  topic_arn = aws_sns_topic.email.arn
+
+  endpoint = var.subscribes_email_address
+  protocol = "email"
+}

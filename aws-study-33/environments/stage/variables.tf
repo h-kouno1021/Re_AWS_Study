@@ -23,6 +23,11 @@ variable "ec2_instance_config" {
   type    = string
   default = "t2.micro"
 }
+variable "subscribes_email_address" {
+  type        = string
+  description = "The email address to receive alarm notifications"
+  sensitive   = true
+}
 variable "my_ip" {
   type = string
 }
