@@ -14,3 +14,10 @@ module "alb" {
   target_id         = aws_instance.ec2.id
   vpc_id            = module.vpc.vpc_id
 }
+
+module "waf" {
+  source = "../../modules/waf"
+
+  name_prefix = local.name_prefix
+  web_acl_association_resource_arn = module.alb.lb_arn
+}
