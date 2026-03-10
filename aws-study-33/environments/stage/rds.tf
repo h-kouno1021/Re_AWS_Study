@@ -5,7 +5,7 @@ data "aws_availability_zones" "available" {}
 resource "aws_db_instance" "main" {
   identifier                  = "${local.name_prefix}-rds"
   engine                      = "mysql"
-  engine_version              = "8.4.7"
+  engine_version              = var.rds_engine_version
   instance_class              = var.rds_instance_config
   storage_type                = "gp2"
   allocated_storage           = "20"
@@ -15,7 +15,7 @@ resource "aws_db_instance" "main" {
   storage_encrypted           = true
   allow_major_version_upgrade = false
   auto_minor_version_upgrade  = true
-  deletion_protection         = false
+  deletion_protection         = var.rds_enable_deletion_protection
 
   multi_az               = var.rds_multi_az
   availability_zone      = data.aws_availability_zones.available.names[0]

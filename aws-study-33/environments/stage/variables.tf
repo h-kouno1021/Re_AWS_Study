@@ -37,6 +37,14 @@ variable "my_ip" {
 }
 
 # RDS
+variable "rds_enable_deletion_protection" {
+  type    = bool
+  default = true
+}
+variable "rds_engine_version" {
+  type    = string
+  default = "8.4.7"
+}
 variable "rds_instance_config" {
   type    = string
   default = "db.t4g.micro"
