@@ -6,7 +6,7 @@ resource "aws_vpc" "main_vpc" {
   instance_tenancy = "default"
   
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-vpc"
+    Name = "${var.name_prefix}-vpc"
   }
 }
 
@@ -15,7 +15,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    "Name" = "${var.pj_prefix}-terraform-${var.my_env}-igw"
+    "Name" = "${var.name_prefix}-igw"
   }
 }
 
@@ -45,7 +45,7 @@ resource "aws_subnet" "subnets" {
   map_public_ip_on_launch = each.value.type == "public"
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-subnet-${each.key}"
+    Name = "${var.name_prefix}-subnet-${each.key}"
   }
 }
 
@@ -54,7 +54,7 @@ resource "aws_route_table" "pubsub_route_table" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-pubsub-routetable"
+    Name = "${var.name_prefix}-pubsub-routetable"
   }
 }
 
@@ -79,7 +79,7 @@ resource "aws_route_table" "pvtsub_route_table" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-${each.key}-routetable"
+    Name = "${var.name_prefix}-${each.key}-routetable"
   }
 }
 

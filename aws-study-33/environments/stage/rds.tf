@@ -3,7 +3,7 @@ data "aws_availability_zones" "available" {}
 
 # RDSインスタンス
 resource "aws_db_instance" "main" {
-  identifier                  = "${var.pj_prefix}-terraform-${var.my_env}-rds"
+  identifier                  = "${local.name_prefix}-rds"
   engine                      = "mysql"
   engine_version              = "8.4.7"
   instance_class              = var.rds_instance_config
@@ -32,24 +32,24 @@ resource "aws_db_instance" "main" {
   enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-rds"
+    Name = "${local.name_prefix}-rds"
   }
 }
 
 # DBサブネットグループ
 resource "aws_db_subnet_group" "rds" {
-  name       = "${var.pj_prefix}-terraform-${var.my_env}-rds-db-subnet-group"
+  name       = "${local.name_prefix}-rds-db-subnet-group"
   subnet_ids = values(module.vpc.private_subnet_ids)
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-rds-db-subnet-group"
+    Name = "${local.name_prefix}-rds-db-subnet-group"
   }
 }
 
 # セキュリティグループ
 resource "aws_security_group" "rds" {
   vpc_id = module.vpc.vpc_id
-  name   = "${var.pj_prefix}-terraform-${var.my_env}-rds-sg"
+  name   = "${local.name_prefix}-rds-sg"
 
   # 指定のEC2からのアクセスのみ許可
   ingress {
@@ -66,6 +66,6 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-rds-sg"
+    Name = "${local.name_prefix}-rds-sg"
   }
 }

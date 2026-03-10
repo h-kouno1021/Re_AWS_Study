@@ -13,14 +13,14 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
   tags = {
-    "Name" = "${var.pj_prefix}-terraform-${var.my_env}-ec2"
+    "Name" = "${local.name_prefix}-ec2"
   }
 }
 
 # SecuriryGroup
 resource "aws_security_group" "ec2_sg" {
   vpc_id = module.vpc.vpc_id
-  name   = "${var.pj_prefix}-terraform-${var.my_env}-ec2-sg"
+  name   = "${local.name_prefix}-ec2-sg"
 
   # SSH
   ingress {
@@ -38,7 +38,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "${var.pj_prefix}-terraform-${var.my_env}-ec2-sg"
+    Name = "${local.name_prefix}-ec2-sg"
   }
 }
 

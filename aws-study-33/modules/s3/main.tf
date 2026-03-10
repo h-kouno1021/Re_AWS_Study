@@ -1,8 +1,12 @@
+resource "random_id" "s3_bucket" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "main" {
-  bucket = "${var.pj_prefix}-terraform-${var.my_env}-s3"
+  bucket = "${var.name_prefix}-s3-${random_id.s3_bucket.hex}"
 
   tags = {
-    "Name" = "${var.pj_prefix}-terraform-${var.my_env}-s3"
+    "Name" = "${var.name_prefix}-s3-${random_id.s3_bucket.hex}"
   }
 }
 
