@@ -11,7 +11,7 @@ resource "aws_wafv2_web_acl" "main" {
 		priority = 1
 		
 		override_action {
-			count {}
+			none {}
 		}
 
 		statement {

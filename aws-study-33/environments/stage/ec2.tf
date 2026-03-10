@@ -29,6 +29,13 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "tcp"
     cidr_blocks = ["${var.my_ip}/32"]
   }
+  # ALB
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = ["${module.alb.lb_security_group_id}"]
+  }
 
   egress {
     from_port   = 0
