@@ -22,11 +22,11 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.rds.id
   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  skip_final_snapshot             = true
+  skip_final_snapshot             = false
   username                        = var.rds_db_username
   password                        = var.rds_db_password
   db_name                         = var.rds_db_name
-  backup_retention_period         = 0
+  backup_retention_period         = 7
   monitoring_role_arn             = aws_iam_role.monitoring_rds.arn
   monitoring_interval             = 60
   enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]

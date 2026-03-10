@@ -4,7 +4,7 @@ data "aws_iam_policy" "monitoring_policy_rds" {
 }
 
 resource "aws_iam_role" "monitoring_rds" {
-  name = "rds-monitoring-role"
+  name = var.rds_monitoring_role_name
   path = "/"
 
   assume_role_policy = jsonencode({

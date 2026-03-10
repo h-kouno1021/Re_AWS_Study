@@ -23,6 +23,10 @@ variable "ec2_instance_config" {
   type    = string
   default = "t2.micro"
 }
+variable "key_name" {
+  type        = string
+  description = "Name of an existing EC2 KeyPair to SSH into the instance"
+}
 variable "subscribes_email_address" {
   type        = string
   description = "The email address to receive alarm notifications"
@@ -36,6 +40,11 @@ variable "my_ip" {
 variable "rds_instance_config" {
   type    = string
   default = "db.t4g.micro"
+}
+variable "rds_monitoring_role_name" {
+  type        = string
+  description = "This parameter allows a string of characters consisting of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: _+=,.@-."
+  default     = "rds-monitoring-role"
 }
 variable "rds_multi_az" {
   type    = bool

@@ -6,7 +6,7 @@ resource "aws_instance" "ec2" {
   ami                     = data.aws_ssm_parameter.ami_al2023.value
   instance_type           = var.ec2_instance_config
   tenancy                 = "default"
-  key_name                = "aws-study-re"
+  key_name                = var.key_name
   disable_api_termination = false
 
   subnet_id              = module.vpc.public_subnet_ids["public-1a"]
