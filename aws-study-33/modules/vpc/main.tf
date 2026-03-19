@@ -1,10 +1,10 @@
 # VPC
 resource "aws_vpc" "main_vpc" {
-  cidr_block = var.vpc_cidr_block
-  enable_dns_support = true
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_support   = true
   enable_dns_hostnames = true
-  instance_tenancy = "default"
-  
+  instance_tenancy     = "default"
+
   tags = {
     Name = "${var.name_prefix}-vpc"
   }
@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route" "route_public" {
   destination_cidr_block = "0.0.0.0/0"
 
-  gateway_id = aws_internet_gateway.igw.id
+  gateway_id     = aws_internet_gateway.igw.id
   route_table_id = aws_route_table.pubsub_route_table.id
 }
 
@@ -39,9 +39,9 @@ locals {
 resource "aws_subnet" "subnets" {
   for_each = local.subnets
 
-  vpc_id = aws_vpc.main_vpc.id
-  cidr_block = each.value.cidr
-  availability_zone = each.value.az
+  vpc_id                  = aws_vpc.main_vpc.id
+  cidr_block              = each.value.cidr
+  availability_zone       = each.value.az
   map_public_ip_on_launch = each.value.type == "public"
 
   tags = {
@@ -65,7 +65,7 @@ resource "aws_route_table_association" "association_pubsub_route_table" {
     if subnet.type == "public"
   }
 
-  subnet_id = aws_subnet.subnets[each.key].id
+  subnet_id      = aws_subnet.subnets[each.key].id
   route_table_id = aws_route_table.pubsub_route_table.id
 }
 
@@ -90,13 +90,13 @@ resource "aws_route_table_association" "association_pvtsub_route_table" {
     if subnet.type == "private"
   }
 
-  subnet_id = aws_subnet.subnets[each.key].id
+  subnet_id      = aws_subnet.subnets[each.key].id
   route_table_id = aws_route_table.pvtsub_route_table[each.key].id
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id = aws_vpc.main_vpc.id
-  service_name = "com.amazonaws.ap-northeast-1.s3"
+  vpc_id            = aws_vpc.main_vpc.id
+  service_name      = "com.amazonaws.ap-northeast-1.s3"
   vpc_endpoint_type = "Gateway"
 
   route_table_ids = [

@@ -1,4 +1,4 @@
 variable "name_prefix" {
-  type = string
+  type        = string
   description = "Resourses name prefix"
 }

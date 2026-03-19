@@ -22,31 +22,36 @@ resource "aws_security_group" "ec2_sg" {
   vpc_id = module.vpc.vpc_id
   name   = "${local.name_prefix}-ec2-sg"
 
-  # SSH
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${var.my_ip}/32"]
-  }
-  # ALB
-  ingress {
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = ["${module.alb.lb_security_group_id}"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = {
     Name = "${local.name_prefix}-ec2-sg"
   }
+}
+
+# ingress_rule
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
+  security_group_id = aws_security_group.ec2_sg.id
+
+  from_port   = 22
+  to_port     = 22
+  ip_protocol = "tcp"
+  cidr_ipv4   = "${var.my_ip}/32"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_alb" {
+  security_group_id = aws_security_group.ec2_sg.id
+
+  from_port                    = 8080
+  to_port                      = 8080
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = module.alb.lb_security_group_id
+}
+
+# egress_rule
+resource "aws_vpc_security_group_egress_rule" "allow_all" {
+  security_group_id = aws_security_group.ec2_sg.id
+
+  ip_protocol = "-1"
+  cidr_ipv4   = "0.0.0.0/0"
 }
 
 # CPU使用率に対するアラーム設定
