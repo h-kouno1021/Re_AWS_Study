@@ -28,6 +28,15 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 # ingress_rule
+
+locals {
+  # 接続を許可するALBのセキュリティグループIDの値の条件分岐
+  alb_sg_id = (var.alb_sg_id != null
+    ? var.alb_sg_id
+    : module.alb.lb_security_group_id
+  )
+}
+
 resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
   security_group_id = aws_security_group.ec2_sg.id
 
@@ -43,7 +52,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_alb" {
   from_port                    = 8080
   to_port                      = 8080
   ip_protocol                  = "tcp"
-  referenced_security_group_id = module.alb.lb_security_group_id
+  referenced_security_group_id = local.alb_sg_id
 }
 
 # egress_rule

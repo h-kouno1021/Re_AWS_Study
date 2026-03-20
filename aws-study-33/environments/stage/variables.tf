@@ -23,6 +23,10 @@ variable "ec2_instance_config" {
   type    = string
   default = "t2.micro"
 }
+variable "ec2_sg_id" {
+  type = string
+  default = null
+}
 variable "key_name" {
   type        = string
   description = "Name of an existing EC2 KeyPair to SSH into the instance"
@@ -69,4 +73,10 @@ variable "rds_db_username" {
 variable "rds_db_password" {
   type      = string
   sensitive = true
+}
+
+# ALB
+variable "alb_sg_id" {
+  type    = string
+  default = null
 }

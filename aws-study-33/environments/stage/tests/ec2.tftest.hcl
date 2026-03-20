@@ -32,6 +32,10 @@ run "ec2-sg_ingress_allow_ssh" {
 run "ec2-sg_ingress_allow_alb" {
   command = plan
 
+  variables {
+    alb_sg_id = "example"
+  }
+
   assert {
     condition = (
       aws_vpc_security_group_ingress_rule.allow_alb.from_port == 8080 &&
@@ -46,6 +50,10 @@ run "ec2-sg_ingress_allow_alb" {
   assert {
     condition     = aws_vpc_security_group_ingress_rule.allow_alb.cidr_ipv4 == null
     error_message = "外部からのアクセスは許可されていません"
+  }
+  assert {
+    condition = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"
+    error_message = "接続を許可するセキュリティグループの設定が不正です"
   }
 }
 

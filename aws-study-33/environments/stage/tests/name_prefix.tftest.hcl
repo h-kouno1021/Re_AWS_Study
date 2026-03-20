@@ -13,10 +13,19 @@ run "name_prefix" {
   }
 }
 
-# 無効な値を変数に入れる
+# 環境名の検証
+run "my_env" {
+  command = plan
+
+  variables {
+    my_env = "prod"
+  }
+}
+
 run "my_env_invalid" {
   command = plan
 
+  # 無効な値を変数に入れた時に失敗することを確認
   variables {
     my_env = "dev"
   }
