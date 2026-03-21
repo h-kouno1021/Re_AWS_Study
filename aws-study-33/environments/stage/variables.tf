@@ -24,7 +24,7 @@ variable "ec2_instance_config" {
   default = "t2.micro"
 }
 variable "ec2_sg_id" {
-  type = string
+  type    = string
   default = null
 }
 variable "key_name" {

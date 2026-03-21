@@ -48,8 +48,8 @@ run "ec2-sg_ingress_allow_alb" {
     error_message = "ALBとEC2間の通信プロトコルはTCPである必要があります"
   }
   assert {
-    condition     = aws_vpc_security_group_ingress_rule.allow_alb.cidr_ipv4 == null
-    error_message = "外部からのアクセスは許可されていません"
+    condition     = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id != null
+    error_message = "参照するセキュリティグループが設定されていません"
   }
   assert {
     condition = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"

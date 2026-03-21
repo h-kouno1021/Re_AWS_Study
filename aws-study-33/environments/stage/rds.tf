@@ -52,8 +52,8 @@ locals {
   # 接続を許可するEC2のセキュリティグループIDの値の条件分岐
   ec2_sg_id = (
     var.ec2_sg_id != null
-      ? var.ec2_sg_id
-      : aws_security_group.ec2_sg.id
+    ? var.ec2_sg_id
+    : aws_security_group.ec2_sg.id
   )
 }
 resource "aws_security_group" "rds" {
