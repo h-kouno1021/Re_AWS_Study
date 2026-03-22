@@ -5,8 +5,8 @@ jobs:
   Explore-GitHub-Actions: 
     runs-on: ubuntu-latest 
     steps: 
-      - run: echo "🎉 このジョブは ${{ github.event_name }} イベントによって自動的にトリガーされました。
-      " - run: echo "🐧 このジョブは現在、GitHub がホストする ${{ runner.os }} サーバーで実行されています。!" 
+      - run: echo "🎉 このジョブは ${{ github.event_name }} イベントによって自動的にトリガーされました。"
+      - run: echo "🐧 このジョブは現在、GitHub がホストする ${{ runner.os }} サーバーで実行されています。!" 
       - run: echo "🔎 ブランチ名は ${{ github.ref }}、リポジトリ名は ${{ github.repository }} です。" 
       - name: リポジトリ コードのチェックアウト
         uses: actions/checkout@v5 
