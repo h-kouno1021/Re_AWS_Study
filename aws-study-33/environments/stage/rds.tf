@@ -47,6 +47,15 @@ resource "aws_db_subnet_group" "rds" {
 }
 
 # セキュリティグループ
+
+locals {
+  # 接続を許可するEC2のセキュリティグループIDの値の条件分岐
+  ec2_sg_id = (
+    var.ec2_sg_id != null
+    ? var.ec2_sg_id
+    : aws_security_group.ec2_sg.id
+  )
+}
 resource "aws_security_group" "rds" {
   vpc_id = module.vpc.vpc_id
   name   = "${local.name_prefix}-rds-sg"
@@ -56,7 +65,7 @@ resource "aws_security_group" "rds" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.ec2_sg.id]
+    security_groups = [local.ec2_sg_id]
   }
   egress {
     from_port   = 0
