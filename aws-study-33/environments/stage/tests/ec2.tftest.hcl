@@ -1,3 +1,21 @@
+variables {
+  vpc_cidr_block = "10.0.0.0/16"
+  my_env         = "stage"
+
+  # EC2
+  ec2_instance_config = "t2.micro"
+
+  # RDS
+  rds_instance_config            = "db.t4g.micro"
+  rds_multi_az                   = "false"
+  rds_enable_deletion_protection = "false"
+  rds_db_name                    = "example"
+
+  subscribes_email_address = "example"
+  rds_db_password          = "example"
+  rds_db_username          = "example"
+}
+
 # インスタンスタイプの検証
 run "instance_type" {
   command = plan
@@ -52,7 +70,7 @@ run "ec2-sg_ingress_allow_alb" {
     error_message = "参照するセキュリティグループが設定されていません"
   }
   assert {
-    condition = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"
+    condition     = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"
     error_message = "接続を許可するセキュリティグループの設定が不正です"
   }
 }
