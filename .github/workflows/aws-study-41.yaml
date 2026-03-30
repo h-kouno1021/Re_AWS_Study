@@ -1,10 +1,7 @@
 name: Workflow
 on:
   pull_request:
-    paths:
-      - 'aws-study-33/**/*.tf'
-      - 'aws-study-33/**/*.tftest.hcl'
-      - '.github/workflows/*.yaml'
+
   push:
     branches:
       - main
