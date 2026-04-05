@@ -1,7 +1,10 @@
 name: Workflow
 on:
   pull_request:
-
+    paths:
+      - 'aws-study-33/**/*.tf'
+      - 'aws-study-33/**/*.tftest.hcl'
+      - '.github/workflows/*.yaml'
   push:
     branches:
       - main
@@ -68,9 +71,9 @@ jobs:
       # plan実行
       - name: terraform plan
         env:
-          TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
-          TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
-          TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
+          TF_VAR_rds_db_password : 'example'
+          TF_VAR_rds_db_username : 'example'
+          TF_VAR_subscribes_email_address : 'example'
         run: |
           terraform init
           terraform plan -var-file=${{ vars.MY_ENV }}.tfvars -input=false
