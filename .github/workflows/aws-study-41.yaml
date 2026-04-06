@@ -68,15 +68,22 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
 
+      - name: Setup tfcmt
+        run: |
+          curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v4.14.1/tfcmt_linux_amd64.tar.gz
+          tar -xvf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/
+
       # plan実行
       - name: terraform plan
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           TF_VAR_rds_db_password : 'example'
           TF_VAR_rds_db_username : 'example'
           TF_VAR_subscribes_email_address : 'example'
         run: |
           terraform init
-          terraform plan -var-file=${{ vars.MY_ENV }}.tfvars -input=false
+          tfcmt plan -- terraform plan -var-file=${{ vars.MY_ENV }}.tfvars -input=false
 
   # 3.apply
   apply:
@@ -98,11 +105,18 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
 
+      - name: Setup tfcmt
+        run: |
+          curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v4.14.1/tfcmt_linux_amd64.tar.gz
+          tar -xvf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/
+
       - name: terraform apply
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
           TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
           TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
         run: |
           terraform init
-          terraform apply -var-file=${{ vars.MY_ENV }}.tfvars -auto-approve -input=false
+          tfcmt apply -- terraform apply -var-file=${{ vars.MY_ENV }}.tfvars -auto-approve -input=false
