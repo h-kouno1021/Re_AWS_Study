@@ -1,11 +1,13 @@
 variables {
-  pj_prefix = "raisetech"
   my_env    = "stage"
+  my_ip     = "60.94.251.76"
+  pj_prefix = "raisetech"
 
   vpc_cidr_block = "10.0.0.0/16"
 
   # EC2
   ec2_instance_config = "t2.micro"
+  key_name            = "example"
 
   # RDS
   rds_instance_config            = "db.t4g.micro"
