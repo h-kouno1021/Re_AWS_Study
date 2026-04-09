@@ -55,6 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: aws-study-41-stage
 
+    defaults:
+      run:
+        working-directory: 'aws-study-33/environments/stage'
+
     steps:
       - name: Checkoout
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
@@ -78,13 +82,8 @@ jobs:
       - name: terraform plan
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TF_VAR_key_name : ${{ vars.KEY_NAME }}
-          TF_VAR_my_ip : ${{ vars.MY_IP }}
-          TF_VAR_pj_prefix : ${{ vars.PJ_PREFIX }}
           TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
           TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
-          TF_VAR_rds_engine_version : ${{ vars.RDS_ENGINE_VERSION }}
-          TF_VAR_rds_monitoring_role_name : ${{ vars.RDS_MONITORING_ROLE_NAME }}
           TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
         run: |
           terraform init
@@ -96,6 +95,10 @@ jobs:
     needs: [plan]
     runs-on: ubuntu-latest
     environment: aws-study-41-stage
+
+    defaults:
+      run:
+        working-directory: 'aws-study-33/environments/stage'
 
     steps:
       - name: Checkoout
@@ -119,13 +122,8 @@ jobs:
       - name: terraform apply
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TF_VAR_key_name : ${{ vars.KEY_NAME }}
-          TF_VAR_my_ip : ${{ vars.MY_IP }}
-          TF_VAR_pj_prefix : ${{ vars.PJ_PREFIX }}
           TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
           TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
-          TF_VAR_rds_engine_version : ${{ vars.RDS_ENGINE_VERSION }}
-          TF_VAR_rds_monitoring_role_name : ${{ vars.RDS_MONITORING_ROLE_NAME }}
           TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
         run: |
           terraform init
