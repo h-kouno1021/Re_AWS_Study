@@ -81,11 +81,11 @@ jobs:
           TF_VAR_key_name : ${{ vars.KEY_NAME }}
           TF_VAR_my_ip : ${{ vars.MY_IP }}
           TF_VAR_pj_prefix : ${{ vars.PJ_PREFIX }}
-          TF_VAR_rds_db_password : 'example'
-          TF_VAR_rds_db_username : 'example'
+          TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
+          TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
           TF_VAR_rds_engine_version : ${{ vars.RDS_ENGINE_VERSION }}
           TF_VAR_rds_monitoring_role_name : ${{ vars.RDS_MONITORING_ROLE_NAME }}
-          TF_VAR_subscribes_email_address : 'example'
+          TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
         run: |
           terraform init
           tfcmt plan -- terraform plan -var-file=${{ vars.MY_ENV }}.tfvars -input=false
