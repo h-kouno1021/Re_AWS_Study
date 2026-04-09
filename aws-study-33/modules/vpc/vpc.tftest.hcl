@@ -1,4 +1,4 @@
-mock_provider "aws" {}  
+mock_provider "aws" {}
 
 variables {
   name_prefix    = "example"
