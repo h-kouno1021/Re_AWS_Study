@@ -1,3 +1,7 @@
+mock_provider "aws" {
+  source = "./tests"
+}
+
 variables {
   my_env    = "stage"
   my_ip     = "60.94.251.76"

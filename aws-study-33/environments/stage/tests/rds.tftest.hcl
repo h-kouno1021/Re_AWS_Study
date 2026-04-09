@@ -1,3 +1,7 @@
+mock_provider "aws" {
+  source = "./tests"
+}
+
 variables {
   vpc_cidr_block = "10.0.0.0/16"
   my_env         = "stage"
