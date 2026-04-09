@@ -20,6 +20,14 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+# terraform.tfvarsと環境変数のtfvarsファイルは除外しない
+!terraform.tfvars
+!terraform.tfvars.json
+!stage.tfvars
+!stage.tfvars.json
+!prod.tfvars
+!prod.tfvars.json
+
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
 override.tf
