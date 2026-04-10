@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-      - aws-study-41
     paths:
       - 'aws-study-33/**/*.tf'
       - 'aws-study-33/**/*.tftest.hcl'
@@ -95,7 +94,7 @@ jobs:
 
   # 3.apply
   apply:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/aws-study-41' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: [plan]
     runs-on: ubuntu-latest
     environment: aws-study-41-stage
