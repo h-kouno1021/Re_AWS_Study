@@ -13,6 +13,8 @@ on:
       - 'aws-study-33/**/*.tftest.hcl'
       - '.github/workflows/*.yaml'
 
+  workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
@@ -93,7 +95,7 @@ jobs:
 
   # 3.apply
   apply:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
     needs: [plan]
     runs-on: ubuntu-latest
     environment: aws-study-41-stage
