@@ -13,9 +13,11 @@ on:
       - 'aws-study-33/**/*.tftest.hcl'
       - '.github/workflows/*.yaml'
 
-# OIDCを使用するためのIDトークンの書き込み権限
 permissions:
   id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   # 1.テスト
