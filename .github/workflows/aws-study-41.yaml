@@ -26,6 +26,7 @@ jobs:
   test:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
+    environment: aws-study-41-stage
 
     defaults:
       run:
@@ -50,7 +51,7 @@ jobs:
 
       # テスト実行
       - name: terraform test
-        run: terraform test
+        run: terraform test -var-file=${{ vars.MY_ENV }}.tfvars
 
   # 2.plan
   plan:
