@@ -1,4 +1,4 @@
-name: Workflow
+name: RaiseTech CI/CD
 on:
   pull_request:
     paths:
