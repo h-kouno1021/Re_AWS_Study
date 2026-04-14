@@ -1,3 +1,13 @@
+mock_provider "aws" {
+  source = "./tests"
+}
+
+variables {
+  subscribes_email_address = "example"
+  rds_db_password          = "example"
+  rds_db_username          = "example"
+}
+
 # インスタンスタイプの検証
 run "instance_type" {
   command = plan
@@ -52,7 +62,7 @@ run "ec2-sg_ingress_allow_alb" {
     error_message = "参照するセキュリティグループが設定されていません"
   }
   assert {
-    condition = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"
+    condition     = aws_vpc_security_group_ingress_rule.allow_alb.referenced_security_group_id == "example"
     error_message = "接続を許可するセキュリティグループの設定が不正です"
   }
 }

@@ -1,0 +1,133 @@
+name: RaiseTech CI/CD
+on:
+  pull_request:
+    paths:
+      - 'aws-study-33/**/*.tf'
+      - 'aws-study-33/**/*.tftest.hcl'
+      - '.github/workflows/*.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'aws-study-33/**/*.tf'
+      - 'aws-study-33/**/*.tftest.hcl'
+      - '.github/workflows/*.yaml'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # 1.テスト
+  test:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    environment: aws-study-41-stage
+
+    defaults:
+      run:
+        working-directory: 'aws-study-33/environments/stage'
+
+    steps:
+      - name: Checkoout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
+
+      # フォーマットチェック
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+        working-directory: .
+      
+      # 構文チェック
+      - name: Terraform Validate
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      # テスト実行
+      - name: terraform test
+        run: terraform test -var-file=${{ vars.MY_ENV }}.tfvars
+
+  # 2.plan
+  plan:
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: aws-study-41-stage
+
+    defaults:
+      run:
+        working-directory: 'aws-study-33/environments/stage'
+
+    steps:
+      - name: Checkoout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      # AWS認証(OIDC)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@4ce2bbcf5d401e557e0537d863a6aced08605794
+        with:
+          # IDプロバイダにassumeするロールのARNとリージョンを選択
+          role-to-assume: ${{ vars.OIDC_ROLE_ARN }}
+          aws-region: ap-northeast-1
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
+
+      - name: Setup tfcmt
+        run: |
+          curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v4.14.1/tfcmt_linux_amd64.tar.gz
+          tar -xvf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/
+
+      # plan実行
+      - name: terraform plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
+          TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
+          TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
+        run: |
+          terraform init
+          tfcmt plan -- terraform plan -var-file=${{ vars.MY_ENV }}.tfvars -input=false
+
+  # 3.apply
+  apply:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [plan]
+    runs-on: ubuntu-latest
+    environment: aws-study-41-stage
+
+    defaults:
+      run:
+        working-directory: 'aws-study-33/environments/stage'
+
+    steps:
+      - name: Checkoout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      # AWS認証(OIDC)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4ce2bbcf5d401e557e0537d863a6aced08605794
+        with:
+          # IDプロバイダにassumeするロールのARNとリージョンを選択
+          role-to-assume: ${{ vars.OIDC_ROLE_ARN }}
+          aws-region: ap-northeast-1
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
+
+      - name: Setup tfcmt
+        run: |
+          curl -fL -o tfcmt.tar.gz https://github.com/suzuki-shunsuke/tfcmt/releases/download/v4.14.1/tfcmt_linux_amd64.tar.gz
+          tar -xvf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/
+
+      - name: terraform apply
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TF_VAR_rds_db_password : ${{ secrets.RDS_DB_PASSWORD }}
+          TF_VAR_rds_db_username : ${{ secrets.RDS_DB_USERNAME }}
+          TF_VAR_subscribes_email_address : ${{ secrets.SUBSCRIBES_EMAIL_ADDRESS }}
+        run: |
+          terraform init
+          tfcmt apply -- terraform apply -var-file=${{ vars.MY_ENV }}.tfvars -auto-approve -input=false

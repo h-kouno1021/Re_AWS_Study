@@ -1,6 +1,11 @@
+mock_provider "aws" {
+  source = "./tests"
+}
+
 variables {
-  pj_prefix = "raisetech"
-  my_env    = "stage"
+  subscribes_email_address = "example"
+  rds_db_password          = "example"
+  rds_db_username          = "example"
 }
 
 # 名前のプレフィックスの検証
