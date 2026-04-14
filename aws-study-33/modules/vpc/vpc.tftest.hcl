@@ -1,5 +1,3 @@
-mock_provider "aws" {}
-
 variables {
   name_prefix    = "example"
   vpc_cidr_block = "10.0.0.0/16"
