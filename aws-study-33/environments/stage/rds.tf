@@ -23,6 +23,7 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [aws_security_group.rds.id]
 
   skip_final_snapshot             = false
+  final_snapshot_identifier       = "db-snapshot-${local.name_prefix}"
   username                        = var.rds_db_username
   password                        = var.rds_db_password
   db_name                         = var.rds_db_name
