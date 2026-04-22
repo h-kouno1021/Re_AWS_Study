@@ -1,3 +1,13 @@
+mock_provider "aws" {
+  source = "./tests"
+}
+
+variables {
+  subscribes_email_address = "example"
+  rds_db_password          = "example"
+  rds_db_username          = "example"
+}
+
 run "rds_ingress_allow_ec2" {
   command = plan
 

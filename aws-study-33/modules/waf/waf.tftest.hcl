@@ -1,3 +1,5 @@
+mock_provider "aws" {}
+
 variables {
   name_prefix                      = "example"
   web_acl_association_resource_arn = "arn:aws:elasticloadbalancing:ap-northeast-1:012345678901:loadbalancer/app/example/example"
