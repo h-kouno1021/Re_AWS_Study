@@ -17,6 +17,22 @@ resource "aws_instance" "ec2" {
   }
 }
 
+# GitHub Actionsの動作確認用のインスタンス
+resource "aws_instance" "cicd_study" {
+  ami                     = data.aws_ssm_parameter.ami_al2023.value
+  instance_type           = var.ec2_instance_config
+  tenancy                 = "default"
+  key_name                = var.key_name
+  disable_api_termination = false
+
+  subnet_id              = module.vpc.public_subnet_ids["public-1c"]
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+
+  tags = {
+    "Name" = "${local.name_prefix}-ec2-cicd-study"
+  }
+}
+
 # SecuriryGroup
 resource "aws_security_group" "ec2_sg" {
   vpc_id = module.vpc.vpc_id
